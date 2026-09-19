@@ -36,24 +36,29 @@
     $("#authError").style.display = "none";
     if (!email || !pass) return;
     try {
-      if (mode === "signup") {
+       if (mode === "signup") {
         const code = $("#setupCodeInput").value.trim();
         if (code !== window.TEACHER_SETUP_CODE) {
           throw new Error("Incorrect setup code.");
         }
         let cred;
+        let isNewAccount = true;
         try {
           cred = await auth.createUserWithEmailAndPassword(email, pass);
         } catch (e) {
           if (e.code === "auth/email-already-in-use") {
             cred = await auth.signInWithEmailAndPassword(email, pass);
+            isNewAccount = false;
           } else { throw e; }
         }
-        await db.collection("teachers").doc(cred.user.uid).set({
-          email: email,
-          setupCode: code,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        const alreadyTeacher = !isNewAccount && (await isTeacher(cred.user.uid));
+        if (!alreadyTeacher) {
+          await db.collection("teachers").doc(cred.user.uid).set({
+            email: email,
+            setupCode: code,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }
       } else {
         await auth.signInWithEmailAndPassword(email, pass);
       }
