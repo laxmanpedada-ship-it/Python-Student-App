@@ -8,12 +8,12 @@
 // Access is controlled separately by firestore.rules.
 // ============================================================
 window.FIREBASE_CONFIG = {
-  apiKey: "PASTE_API_KEY_HERE",
-  authDomain: "PASTE_AUTH_DOMAIN_HERE",
-  projectId: "PASTE_PROJECT_ID_HERE",
-  storageBucket: "PASTE_STORAGE_BUCKET_HERE",
-  messagingSenderId: "PASTE_SENDER_ID_HERE",
-  appId: "PASTE_APP_ID_HERE"
+  apiKey: "AIzaSyBsVDwpUFAyKojO5EmJB3ynxu1HcZtpZFg",
+  authDomain: "srikakulam-pyclass.firebaseapp.com",
+  projectId: "srikakulam-pyclass",
+  storageBucket: "srikakulam-pyclass.firebasestorage.app",
+  messagingSenderId: "729460955849",
+  appId: "1:729460955849:web:f4543c902506d416a58b18"
 };
 
 // A secret word only you (the teacher) know. The first time you
