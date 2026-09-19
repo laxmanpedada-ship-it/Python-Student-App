@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Student — Srikakulam Python Class</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#7A1F2B" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <a href="index.html" style="color:#fff;text-decoration:none;">←</a>
+      <span class="dot"></span><span data-t="appName">Srikakulam Python Class</span>
+    </div>
+    <button class="btn ghost" id="langBtn" data-t="changeLanguage">తెలుగు</button>
+  </header>
+
+  <main>
+    <!-- JOIN SCREEN -->
+    <section id="joinScreen">
+      <h1 data-t="joinClass">Join your class</h1>
+      <div class="card">
+        <label data-t="yourName">Your name</label>
+        <input id="nameInput" data-t-placeholder="yourName" autocomplete="off" />
+        <label data-t="classCode">Class code (ask your teacher)</label>
+        <input id="codeInput" data-t-placeholder="classCode" autocomplete="off" style="text-transform:uppercase;" />
+        <div id="joinError" class="notice error" style="display:none;margin-top:10px;"></div>
+        <button class="btn block" id="joinBtn" style="margin-top:14px;" data-t="join">Join</button>
+      </div>
+    </section>
+
+    <!-- MAIN APP -->
+    <section id="appScreen" style="display:none;">
+      <div class="notice info" id="welcomeNotice"></div>
+
+      <h2 data-t="assignments">Homework</h2>
+      <div id="assignmentList" class="lesson-list"></div>
+      <div id="noAssignments" class="notice" style="display:none;" data-t="noAssignments">No homework has been posted yet. Check back soon!</div>
+
+      <h2 data-t="lessons">Lessons</h2>
+      <div id="lessonList" class="lesson-list"></div>
+
+      <h2 data-t="codeEditor">Code Editor</h2>
+      <div id="editingLabel" class="badge" style="margin-bottom:8px;"></div>
+      <div class="editor-wrap">
+        <textarea id="code" spellcheck="false"></textarea>
+      </div>
+      <div class="toolbar">
+        <button class="btn" id="runBtn"><span data-t="run">Run</span></button>
+        <button class="btn secondary" id="resetBtn" data-t="resetCode">Reset to starter code</button>
+        <button class="btn secondary" id="submitBtn" style="display:none;" data-t="submit">Submit homework</button>
+      </div>
+      <div id="pyStatus" class="notice info" style="display:none;"></div>
+
+      <h2 data-t="output">Output</h2>
+      <div id="output" class="output">—</div>
+      <div id="submitMsg" class="notice" style="display:none;margin-top:10px;"></div>
+
+      <h2 data-t="yourSubmissions">Your past submissions</h2>
+      <div id="mySubmissions"></div>
+    </section>
+  </main>
+
+  <!-- Firebase (compat SDK: simplest to set up, no build step needed) -->
+  <script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-app-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-firestore-compat.js"></script>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/strings.js"></script>
+  <script src="js/lessons.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/student.js"></script>
+</body>
+</html>

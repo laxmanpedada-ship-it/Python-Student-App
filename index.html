@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Srikakulam Python Class</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#7A1F2B" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="dot"></span><span data-t="appName">Srikakulam Python Class</span></div>
+    <button class="btn ghost" id="langBtn" data-t="changeLanguage">తెలుగు</button>
+  </header>
+
+  <main>
+    <h1 data-t="appName">Srikakulam Python Class</h1>
+    <p class="sub" data-t="tagline">Learn Python &amp; AI basics — right from your home!</p>
+
+    <div class="role-grid">
+      <a class="role-card" href="student.html">
+        <span class="emoji">🧑‍🎓</span>
+        <strong data-t="iAmStudent">I am a Student</strong>
+      </a>
+      <a class="role-card" href="teacher.html">
+        <span class="emoji">🧑‍🏫</span>
+        <strong data-t="iAmTeacher">I am the Teacher</strong>
+      </a>
+    </div>
+
+    <footer class="install">
+      <div data-t="installApp">Install this app on your phone</div>
+      <div data-t="installHint" style="margin-top:4px;">Tap your browser menu and choose "Add to Home Screen" so this opens like an app, even without opening a browser.</div>
+    </footer>
+  </main>
+
+  <script src="js/strings.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    window.applyStrings();
+    document.getElementById("langBtn").addEventListener("click", function () {
+      window.setLang(window.getLang() === "en" ? "te" : "en");
+      window.applyStrings();
+    });
+    window.PyClass.registerServiceWorker();
+  </script>
+</body>
+</html>

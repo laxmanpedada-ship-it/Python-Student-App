@@ -1,0 +1,64 @@
+rules_version = '2';
+// ============================================================
+// FIRESTORE SECURITY RULES
+// ------------------------------------------------------------
+// Paste this into Firebase Console → Firestore Database → Rules,
+// then click "Publish". See SETUP.md for the exact steps.
+//
+// IMPORTANT: the setup code below ("venkateswara21") must match
+// window.TEACHER_SETUP_CODE in js/firebase-config.js EXACTLY.
+// If you change one, change the other the same way.
+// ============================================================
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isTeacher() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/teachers/$(request.auth.uid));
+    }
+
+    // Only one teacher account may be created, and only by typing the
+    // secret setup code — this is how the app knows who "the teacher" is.
+    match /teachers/{uid} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+                    && request.auth.uid == uid
+                    && request.resource.data.setupCode == "venkateswara21";
+      allow update, delete: if false;
+    }
+
+    // Class codes you hand out to students.
+    match /classes/{code} {
+      allow read: if isSignedIn();
+      allow write: if isTeacher();
+    }
+
+    // A lightweight profile so the teacher can see student names.
+    match /students/{uid} {
+      allow read: if isTeacher() || (isSignedIn() && request.auth.uid == uid);
+      allow write: if isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Homework the teacher posts.
+    match /assignments/{id} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isTeacher();
+    }
+
+    // What students turn in. A student can only create/read their own,
+    // and can only edit it again (e.g. resubmit) before it's graded.
+    // The teacher can read and grade everything.
+    match /submissions/{id} {
+      allow read: if isTeacher() ||
+        (isSignedIn() && resource.data.studentUid == request.auth.uid);
+      allow create: if isSignedIn() &&
+        request.resource.data.studentUid == request.auth.uid;
+      allow update: if isTeacher() ||
+        (isSignedIn() && resource.data.studentUid == request.auth.uid && resource.data.score == null);
+      allow delete: if isTeacher();
+    }
+  }
+}

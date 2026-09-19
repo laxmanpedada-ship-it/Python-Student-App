@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Teacher — Srikakulam Python Class</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#7A1F2B" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <a href="index.html" style="color:#fff;text-decoration:none;">←</a>
+      <span class="dot"></span><span data-t="appName">Srikakulam Python Class</span>
+    </div>
+    <button class="btn ghost" id="logoutBtn" style="display:none;" data-t="logout">Log out</button>
+  </header>
+
+  <main>
+    <!-- LOGIN / SIGNUP -->
+    <section id="authScreen">
+      <h1 data-t="teacherLogin">Teacher Login</h1>
+      <div class="card">
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <button class="btn secondary" id="tabLogin" style="flex:1;" data-t="login">Log in</button>
+          <button class="btn secondary" id="tabSignup" style="flex:1;" data-t="signUp">First time? Create teacher account</button>
+        </div>
+        <label data-t="email">Email</label>
+        <input id="emailInput" type="email" autocomplete="email" />
+        <label data-t="password">Password</label>
+        <input id="passInput" type="password" autocomplete="current-password" />
+        <div id="setupCodeWrap" style="display:none;">
+          <label data-t="setupCode">Teacher setup code</label>
+          <input id="setupCodeInput" type="text" />
+        </div>
+        <div id="authError" class="notice error" style="display:none;margin-top:10px;"></div>
+        <button class="btn block" id="authSubmit" style="margin-top:14px;" data-t="login">Log in</button>
+      </div>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section id="dashScreen" style="display:none;">
+      <h1 data-t="dashboard">Dashboard</h1>
+
+      <h2 data-t="manageClass">Class codes</h2>
+      <div class="card">
+        <div id="classList"></div>
+        <label data-t="className" style="margin-top:12px;">Class name</label>
+        <input id="newClassName" data-t-placeholder="className" />
+        <label data-t="newClassCode">New class code</label>
+        <input id="newClassCode" style="text-transform:uppercase;" />
+        <button class="btn block" id="addClassBtn" style="margin-top:12px;" data-t="createClass">Create class</button>
+      </div>
+
+      <h2 data-t="createAssignment">Create new homework</h2>
+      <div class="card">
+        <label>Class</label>
+        <select id="assignClassSelect"></select>
+        <label data-t="title">Title</label>
+        <input id="titleEn" data-t-placeholder="title" />
+        <label data-t="titleTe">Title (Telugu, optional)</label>
+        <input id="titleTe" />
+        <label data-t="instructions">Instructions</label>
+        <textarea id="instrEn" rows="3"></textarea>
+        <label data-t="instructionsTe">Instructions (Telugu, optional)</label>
+        <textarea id="instrTe" rows="3"></textarea>
+        <label data-t="starterCode">Starter code students will see</label>
+        <textarea id="starterCode" rows="5" style="font-family:monospace;"></textarea>
+        <div id="assignError" class="notice error" style="display:none;margin-top:10px;"></div>
+        <button class="btn block" id="postBtn" style="margin-top:14px;" data-t="post">Post homework</button>
+      </div>
+
+      <h2 data-t="submissionsFor">Submissions</h2>
+      <div class="card">
+        <label>Homework</label>
+        <select id="assignmentPicker"></select>
+      </div>
+      <div id="submissionsList"></div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-app-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-firestore-compat.js"></script>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/strings.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/teacher.js"></script>
+</body>
+</html>
