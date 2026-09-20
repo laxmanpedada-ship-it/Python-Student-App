@@ -42,18 +42,66 @@ window.PyClass = (function () {
   }
 
   // Runs student code, capturing print() output and errors as text,
-  // without ever throwing back into the caller.
-  async function runPython(code) {
+  // without ever throwing back into the caller. If the code imports a
+  // library that isn't loaded yet (e.g. "import numpy"), this tries to
+  // fetch it automatically (from Pyodide's own package set, then from
+  // PyPI via micropip) and re-runs the code once, so a student never has
+  // to know libraries need installing at all.
+  async function runPython(code, onStatus) {
     const pyodide = await loadPyodideOnce();
-    let output = "";
-    pyodide.setStdout({ batched: function (s) { output += s + "\n"; } });
-    pyodide.setStderr({ batched: function (s) { output += s + "\n"; } });
-    try {
-      await pyodide.runPythonAsync(code);
-      return { ok: true, output: output || "(no output — try using print())" };
-    } catch (err) {
-      return { ok: false, output: output + "\n" + String(err.message || err) };
+
+    async function attempt() {
+      let output = "";
+      pyodide.setStdout({ batched: function (s) { output += s + "\n"; } });
+      pyodide.setStderr({ batched: function (s) { output += s + "\n"; } });
+      try {
+        await pyodide.runPythonAsync(code);
+        return { ok: true, output: output || "(no output — try using print())" };
+      } catch (err) {
+        return { ok: false, output: output, errorText: String(err.message || err) };
+      }
     }
+
+    let result = await attempt();
+    if (result.ok) return result;
+
+    const match = result.errorText.match(/ModuleNotFoundError: No module named '([^']+)'/);
+    if (match) {
+      const moduleName = match[1];
+      let installed = false;
+      if (onStatus) onStatus("installing:" + moduleName);
+      try {
+        // Most common libraries (numpy, pandas, matplotlib, etc.) ship as
+        // pre-built Pyodide packages — try that first.
+        await pyodide.loadPackage(moduleName);
+        installed = true;
+      } catch (e1) {
+        try {
+          // Fall back to micropip for pure-Python packages from PyPI.
+          if (!pyodide.loadedPackages || !pyodide.loadedPackages.micropip) {
+            await pyodide.loadPackage("micropip");
+          }
+          const micropip = pyodide.pyimport("micropip");
+          await micropip.install(moduleName);
+          installed = true;
+        } catch (e2) {
+          installed = false;
+        }
+      }
+      if (installed) {
+        if (onStatus) onStatus("retrying");
+        const retry = await attempt();
+        if (retry.ok) return retry;
+        return { ok: false, output: retry.output + "\n" + retry.errorText };
+      }
+      return {
+        ok: false,
+        output: result.output + "\n" + result.errorText +
+          "\n\n(Tried to automatically add the '" + moduleName + "' library but it isn't available for Python running in a browser. Try a different library, or ask your teacher.)"
+      };
+    }
+
+    return { ok: false, output: result.output + "\n" + result.errorText };
   }
 
   function registerServiceWorker() {
