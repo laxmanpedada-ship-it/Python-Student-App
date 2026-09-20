@@ -104,6 +104,42 @@ window.PyClass = (function () {
     return { ok: false, output: result.output + "\n" + result.errorText };
   }
 
+  // Translates text into another language using MyMemory's free public
+  // API (no key needed for a classroom's low volume, unlike Google's
+  // official Translate API which requires a billed account). Returns the
+  // translated string, or null if translation isn't possible right now
+  // (offline, blocked, rate-limited, or text too long) — callers should
+  // treat null as "couldn't auto-translate, let the teacher type it".
+  async function translateText(text, targetLang, sourceLang) {
+    sourceLang = sourceLang || "en";
+    const trimmed = String(text || "").trim();
+    if (!trimmed) return "";
+    // The free anonymous tier caps requests at a few hundred characters;
+    // skip anything longer rather than send a request that will just
+    // fail — the teacher can translate long text by hand instead.
+    if (trimmed.length > 480) return null;
+    try {
+      // The "de" (developer email) param raises MyMemory's free daily
+      // quota from ~500 words to ~5,000 words per IP. It's only ever
+      // sent to MyMemory's own translation endpoint, never anywhere else.
+      const url = "https://api.mymemory.translated.net/get?q=" +
+        encodeURIComponent(trimmed) + "&langpair=" + sourceLang + "|" + targetLang +
+        "&de=" + encodeURIComponent("laxman.pedada@gmail.com");
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      const data = await res.json();
+      const translated = data && data.responseData && data.responseData.translatedText;
+      if (!translated) return null;
+      // MyMemory sometimes reports a problem (rate limit, bad language
+      // pair) as ordinary 200 text instead of an HTTP error — catch the
+      // common cases so we don't show that text as if it were Telugu.
+      if (/^(MYMEMORY WARNING|INVALID |PLEASE SELECT)/i.test(translated)) return null;
+      return translated;
+    } catch (e) {
+      return null; // offline, blocked, or unreachable — fail quietly
+    }
+  }
+
   function registerServiceWorker() {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("sw.js").catch(function () {});
@@ -124,6 +160,7 @@ window.PyClass = (function () {
     initFirebase: initFirebase,
     loadPyodideOnce: loadPyodideOnce,
     runPython: runPython,
+    translateText: translateText,
     registerServiceWorker: registerServiceWorker,
     qs: qs,
     qsa: qsa,
