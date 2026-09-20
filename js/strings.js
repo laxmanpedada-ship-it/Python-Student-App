@@ -64,7 +64,8 @@ window.STRINGS = {
     codeError: "There's an error in the code — check the output below.",
     welcomeBack: "Welcome back",
     changeLanguage: "తెలుగు",
-    home: "Home"
+    home: "Home",
+    switchStudent: "Not you? Switch student"
   },
   te: {
     appName: "శ్రీకాకుళం పైథాన్ తరగతి",
@@ -129,7 +130,8 @@ window.STRINGS = {
     codeError: "కోడ్‌లో పొరపాటు ఉంది — దిగువ అవుట్‌పుట్ చూడండి.",
     welcomeBack: "తిరిగి స్వాగతం",
     changeLanguage: "English",
-    home: "హోమ్"
+    home: "హోమ్",
+    switchStudent: "మీరు కాదా? విద్యార్థిని మార్చండి"
   }
 };
 
