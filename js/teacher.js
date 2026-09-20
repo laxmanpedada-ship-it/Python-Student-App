@@ -165,6 +165,87 @@
       }, showDashError);
   }
 
+  // Turns a textarea's raw text into a clean array of hints, one per
+  // non-empty line, in the order the teacher typed them.
+  function parseHints(text) {
+    return String(text || "")
+      .split("\n")
+      .map(function (line) { return line.trim(); })
+      .filter(function (line) { return line.length > 0; });
+  }
+
+  function isBlank(v) { return !v || !v.trim(); }
+
+  // Fills a Telugu field from its English counterpart, similar to Google
+  // Translate. Two modes:
+  //  - force=false (auto, on blur): only fires when the Telugu field is
+  //    still empty, so it never overwrites a teacher's own typing.
+  //  - force=true (manual button click): the teacher explicitly asked
+  //    for a (re)translation, so it overwrites whatever's currently in
+  //    the Telugu field — used as the retry path when auto-translate
+  //    didn't fire or failed (offline, quota, etc).
+  // Either way, after the network round-trip it re-checks the English
+  // text hasn't changed since the request started, so a slow response
+  // never lands on top of newer typing.
+  async function translateField(enId, teId, force) {
+    const enEl = $(enId), teEl = $(teId);
+    const text = enEl.value.trim();
+    if (!text) return;
+    if (!force && !isBlank(teEl.value)) return;
+    const original = text;
+    const prevPlaceholder = teEl.placeholder;
+    teEl.placeholder = window.t("translating");
+    const translated = await window.PyClass.translateText(text, "te");
+    teEl.placeholder = prevPlaceholder;
+    if (translated && enEl.value.trim() === original && (force || isBlank(teEl.value))) {
+      teEl.value = translated;
+    }
+    return translated;
+  }
+
+  // Same idea as translateField, but for the hints textarea, which holds
+  // one hint per line — each line is translated separately so the Telugu
+  // hints line up with the English ones in the same order.
+  async function translateHints(force) {
+    const enEl = $("#hintsEn"), teEl = $("#hintsTe");
+    const lines = parseHints(enEl.value);
+    if (!lines.length) return;
+    if (!force && !isBlank(teEl.value)) return;
+    const original = enEl.value;
+    const prevPlaceholder = teEl.placeholder;
+    teEl.placeholder = window.t("translating");
+    const translatedLines = [];
+    for (let i = 0; i < lines.length; i++) {
+      const t = await window.PyClass.translateText(lines[i], "te");
+      // If one line fails to translate, fall back to the English line
+      // rather than dropping it — keeps the hint count matching.
+      translatedLines.push(t || lines[i]);
+    }
+    teEl.placeholder = prevPlaceholder;
+    if (enEl.value === original && (force || isBlank(teEl.value))) {
+      teEl.value = translatedLines.join("\n");
+    }
+  }
+
+  // Wires a manual "Translate to Telugu" button: disables itself and
+  // shows a busy label while the request is in flight, always forces an
+  // overwrite (that's the point of clicking it), and re-enables itself
+  // afterwards no matter how the translation turned out.
+  function wireTranslateButton(btnId, runFn) {
+    const btn = $(btnId);
+    btn.addEventListener("click", async function () {
+      const original = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = window.t("translating");
+      try {
+        await runFn();
+      } finally {
+        btn.disabled = false;
+        btn.textContent = original;
+      }
+    });
+  }
+
   async function postAssignment() {
     $("#assignError").style.display = "none";
     const classCode = $("#assignClassSelect").value;
@@ -182,11 +263,14 @@
         title_te: $("#titleTe").value.trim(),
         instructions_en: $("#instrEn").value.trim(),
         instructions_te: $("#instrTe").value.trim(),
+        hints_en: parseHints($("#hintsEn").value),
+        hints_te: parseHints($("#hintsTe").value),
         starterCode: $("#starterCode").value,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
       $("#titleEn").value = ""; $("#titleTe").value = "";
       $("#instrEn").value = ""; $("#instrTe").value = "";
+      $("#hintsEn").value = ""; $("#hintsTe").value = "";
       $("#starterCode").value = "";
       // No manual reload needed — the live listener above picks this up.
     } catch (e) {
@@ -311,6 +395,12 @@
     $("#tabSignup").addEventListener("click", function () { setMode("signup"); });
     $("#authSubmit").addEventListener("click", doAuth);
     $("#addClassBtn").addEventListener("click", addClass);
+    $("#titleEn").addEventListener("blur", function () { translateField("#titleEn", "#titleTe", false); });
+    $("#instrEn").addEventListener("blur", function () { translateField("#instrEn", "#instrTe", false); });
+    $("#hintsEn").addEventListener("blur", function () { translateHints(false); });
+    wireTranslateButton("#translateTitleBtn", function () { return translateField("#titleEn", "#titleTe", true); });
+    wireTranslateButton("#translateInstrBtn", function () { return translateField("#instrEn", "#instrTe", true); });
+    wireTranslateButton("#translateHintsBtn", function () { return translateHints(true); });
     $("#postBtn").addEventListener("click", postAssignment);
     $("#assignmentPicker").addEventListener("change", function (e) {
       currentAssignmentId = e.target.value;
