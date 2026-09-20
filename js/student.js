@@ -16,7 +16,35 @@
   function showApp() {
     $("#joinScreen").style.display = "none";
     $("#appScreen").style.display = "";
-    $("#welcomeNotice").textContent = window.t("welcomeBack") + ", " + studentName + " (" + classCode + ")";
+    $("#welcomeText").textContent = window.t("welcomeBack") + ", " + studentName + " (" + classCode + ")";
+  }
+
+  function clearSavedIdentity() {
+    try {
+      localStorage.removeItem("pyclass_name");
+      localStorage.removeItem("pyclass_class");
+    } catch (e) {}
+  }
+
+  // Switching students needs a genuinely fresh identity, not just a new
+  // display name — otherwise two siblings sharing a phone would share the
+  // same anonymous account, and their homework submissions would get
+  // mixed together under one student record. Signing out and back in
+  // anonymously gets a brand-new id.
+  async function switchStudent() {
+    clearSavedIdentity();
+    studentName = null; classCode = null; currentAssignment = null;
+    lastAssignments = []; submittedAssignmentIds = new Set();
+    $("#nameInput").value = "";
+    $("#codeInput").value = "";
+    $("#code").value = "";
+    $("#output").textContent = "—";
+    showJoin();
+    try {
+      // The auth listener below picks up the sign-out and automatically
+      // signs back in anonymously with a fresh id.
+      await auth.signOut();
+    } catch (e) { console.error(e); }
   }
 
   function renderLessons() {
@@ -274,6 +302,7 @@
       if (currentAssignment) $("#code").value = currentAssignment.starterCode || "";
     });
     $("#submitBtn").addEventListener("click", submitHomework);
+    $("#switchStudentBtn").addEventListener("click", switchStudent);
 
     await ensureAuth();
     loadSavedIdentity();
