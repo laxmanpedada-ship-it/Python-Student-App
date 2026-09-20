@@ -201,10 +201,17 @@
     });
   }
 
-  async function afterLogin() {
-    await loadClasses();
-    await loadAssignments();
-    showDash();
+    async function afterLogin() {
+    try {
+      await loadClasses();
+      await loadAssignments();
+      showDash();
+    } catch (e) {
+      console.error(e);
+      showAuth();
+      $("#authError").textContent = String(e.message || e);
+      $("#authError").style.display = "";
+    }
   }
 
   async function ensureAuth() {
@@ -212,9 +219,16 @@
     db = f.db; auth = f.auth;
     auth.onAuthStateChanged(async function (user) {
       if (user) {
-        const ok = await isTeacher(user.uid);
-        if (ok) { uid = user.uid; afterLogin(); }
-        else { showAuth(); }
+        try {
+          const ok = await isTeacher(user.uid);
+          if (ok) { uid = user.uid; afterLogin(); }
+          else { showAuth(); }
+        } catch (e) {
+          console.error(e);
+          showAuth();
+          $("#authError").textContent = String(e.message || e);
+          $("#authError").style.display = "";
+        }
       } else {
         showAuth();
       }
