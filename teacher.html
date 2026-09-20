@@ -57,6 +57,7 @@
       </div>
 
       <h2 data-t="createAssignment">Create new homework</h2>
+      <div id="editingBanner" class="notice" style="display:none;margin-bottom:10px;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;"><span id="editingBannerText"></span> <button type="button" class="btn secondary" id="cancelEditBtn" style="padding:6px 12px;font-size:13px;" data-t="cancelEdit">Cancel</button></div>
       <div class="card">
         <label>Class</label>
         <select id="assignClassSelect"></select>
@@ -79,11 +80,16 @@
         <button type="button" class="btn secondary" id="translateHintsBtn" style="padding:6px 12px;font-size:13px;margin-top:6px;" data-t="translateBtn">Translate to Telugu</button>
         <div class="meta" data-t="autoTranslateNote" style="margin-top:6px;margin-bottom:8px;">Fills in automatically from the English above — feel free to edit it. If it doesn't, tap "Translate to Telugu".</div>
         <div class="meta" data-t="hintsHelp" style="margin-top:-6px;margin-bottom:8px;">Each line becomes one hint. Students reveal them one at a time, starting with the first line.</div>
+        <label data-t="dueDate">Due date (optional)</label>
+        <input id="dueDate" type="date" />
         <label data-t="starterCode">Starter code students will see</label>
         <textarea id="starterCode" rows="5" style="font-family:monospace;"></textarea>
         <div id="assignError" class="notice error" style="display:none;margin-top:10px;"></div>
         <button class="btn block" id="postBtn" style="margin-top:14px;" data-t="post">Post homework</button>
       </div>
+
+      <h2 data-t="yourHomework">Your homework</h2>
+      <div id="homeworkList"></div>
 
       <h2 data-t="submissionsFor">Submissions</h2>
       <div class="card">
