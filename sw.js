@@ -2,7 +2,7 @@
 // weak signal. Pyodide (the Python engine) and Firebase load from their
 // CDNs and are cached the first time each is used, so a student only
 // downloads them once even on a slow mobile connection.
-const CACHE_NAME = "pyclass-shell-v4";
+const CACHE_NAME = "pyclass-shell-v9";
 const SHELL_FILES = [
   "./",
   "./index.html",
