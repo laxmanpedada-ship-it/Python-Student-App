@@ -6,6 +6,24 @@
   let lastAssignments = []; // most recent fetch from the server, unfiltered
   let submittedAssignmentIds = new Set(); // assignment ids this student already turned in
 
+  // Live-listener unsubscribe functions, so homework and grades appear the
+  // moment the teacher posts or grades them — no refresh or re-login needed.
+  let assignmentsUnsub = null;
+  let submissionsUnsub = null;
+
+  function showDashError(e) {
+    console.error(e);
+    const box = $("#appError");
+    if (!box) return;
+    box.textContent = String(e.message || e);
+    box.style.display = "";
+  }
+
+  function stopAllListeners() {
+    if (assignmentsUnsub) { assignmentsUnsub(); assignmentsUnsub = null; }
+    if (submissionsUnsub) { submissionsUnsub(); submissionsUnsub = null; }
+  }
+
   function lang() { return window.getLang(); }
   function pick(en, te) { return lang() === "te" && te ? te : en; }
 
@@ -32,6 +50,7 @@
   // mixed together under one student record. Signing out and back in
   // anonymously gets a brand-new id.
   async function switchStudent() {
+    stopAllListeners();
     clearSavedIdentity();
     studentName = null; classCode = null; currentAssignment = null;
     lastAssignments = []; submittedAssignmentIds = new Set();
@@ -110,54 +129,49 @@
     renderAssignments(visible);
   }
 
-  async function loadAssignments() {
-    try {
-      const snap = await db.collection("assignments")
-        .where("classCode", "==", classCode)
-        .orderBy("createdAt", "desc")
-        .get();
-      lastAssignments = [];
-      snap.forEach(function (doc) { lastAssignments.push(Object.assign({ id: doc.id }, doc.data())); });
-      renderVisibleAssignments();
-    } catch (e) {
-      console.error(e);
-    }
+  function loadAssignments() {
+    if (assignmentsUnsub) assignmentsUnsub();
+    assignmentsUnsub = db.collection("assignments")
+      .where("classCode", "==", classCode)
+      .orderBy("createdAt", "desc")
+      .onSnapshot(function (snap) {
+        lastAssignments = [];
+        snap.forEach(function (doc) { lastAssignments.push(Object.assign({ id: doc.id }, doc.data())); });
+        renderVisibleAssignments();
+      }, showDashError);
   }
 
-  async function loadMySubmissions() {
+  function loadMySubmissions() {
+    if (submissionsUnsub) submissionsUnsub();
     const wrap = $("#mySubmissions");
-    try {
-      const snap = await db.collection("submissions")
-        .where("studentUid", "==", uid)
-        .orderBy("submittedAt", "desc")
-        .limit(20)
-        .get();
-      submittedAssignmentIds = new Set();
-      wrap.innerHTML = "";
-      if (snap.empty) {
-        wrap.innerHTML = '<div class="empty">—</div>';
-      } else {
-        snap.forEach(function (doc) {
-          const s = doc.data();
-          if (s.assignmentId) submittedAssignmentIds.add(s.assignmentId);
-          const row = document.createElement("div");
-          row.className = "submission-row";
-          const graded = typeof s.score === "number";
-          row.innerHTML =
-            "<div class='row-head'><strong>" + (s.assignmentTitle || "") + "</strong>" +
-            "<span class='badge " + (graded ? "green" : "pending") + "'>" +
-            (graded ? window.t("score") + ": " + s.score + "/10" : window.t("notGradedYet")) +
-            "</span></div>" +
-            "<div class='meta' style='color:#6b5f56;font-size:12px;margin-top:4px;'>" + window.PyClass.fmtDate(s.submittedAt) + "</div>" +
-            (s.feedback ? "<div style='margin-top:6px;font-size:13.5px;'><strong>" + window.t("feedback") + ":</strong> " + escapeHtml(s.feedback) + "</div>" : "");
-          wrap.appendChild(row);
-        });
-      }
-      renderVisibleAssignments();
-    } catch (e) {
-      console.error(e);
-      wrap.innerHTML = "";
-    }
+    submissionsUnsub = db.collection("submissions")
+      .where("studentUid", "==", uid)
+      .orderBy("submittedAt", "desc")
+      .limit(20)
+      .onSnapshot(function (snap) {
+        submittedAssignmentIds = new Set();
+        wrap.innerHTML = "";
+        if (snap.empty) {
+          wrap.innerHTML = '<div class="empty">—</div>';
+        } else {
+          snap.forEach(function (doc) {
+            const s = doc.data();
+            if (s.assignmentId) submittedAssignmentIds.add(s.assignmentId);
+            const row = document.createElement("div");
+            row.className = "submission-row";
+            const graded = typeof s.score === "number";
+            row.innerHTML =
+              "<div class='row-head'><strong>" + (s.assignmentTitle || "") + "</strong>" +
+              "<span class='badge " + (graded ? "green" : "pending") + "'>" +
+              (graded ? window.t("score") + ": " + s.score + "/10" : window.t("notGradedYet")) +
+              "</span></div>" +
+              "<div class='meta' style='color:#6b5f56;font-size:12px;margin-top:4px;'>" + window.PyClass.fmtDate(s.submittedAt) + "</div>" +
+              (s.feedback ? "<div style='margin-top:6px;font-size:13.5px;'><strong>" + window.t("feedback") + ":</strong> " + escapeHtml(s.feedback) + "</div>" : "");
+            wrap.appendChild(row);
+          });
+        }
+        renderVisibleAssignments();
+      }, showDashError);
   }
 
   function escapeHtml(str) {
@@ -172,7 +186,10 @@
     return new Promise(function (resolve) {
       auth.onAuthStateChanged(function (user) {
         if (user) { uid = user.uid; resolve(); }
-        else { auth.signInAnonymously().catch(function (e) { console.error(e); }); }
+        else {
+          stopAllListeners();
+          auth.signInAnonymously().catch(function (e) { console.error(e); });
+        }
       });
     });
   }
