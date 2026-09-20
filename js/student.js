@@ -3,6 +3,8 @@
   let db, auth, uid;
   let studentName, classCode;
   let currentAssignment = null; // {id, ...} or null when just practicing a lesson
+  let lastAssignments = []; // most recent fetch from the server, unfiltered
+  let submittedAssignmentIds = new Set(); // assignment ids this student already turned in
 
   function lang() { return window.getLang(); }
   function pick(en, te) { return lang() === "te" && te ? te : en; }
@@ -72,15 +74,23 @@
     return window.PyClass.fmtDate(ts);
   };
 
+  // Shows only homework this student hasn't turned in yet.
+  function renderVisibleAssignments() {
+    const visible = lastAssignments.filter(function (a) {
+      return !submittedAssignmentIds.has(a.id);
+    });
+    renderAssignments(visible);
+  }
+
   async function loadAssignments() {
     try {
       const snap = await db.collection("assignments")
         .where("classCode", "==", classCode)
         .orderBy("createdAt", "desc")
         .get();
-      const list = [];
-      snap.forEach(function (doc) { list.push(Object.assign({ id: doc.id }, doc.data())); });
-      renderAssignments(list);
+      lastAssignments = [];
+      snap.forEach(function (doc) { lastAssignments.push(Object.assign({ id: doc.id }, doc.data())); });
+      renderVisibleAssignments();
     } catch (e) {
       console.error(e);
     }
@@ -94,25 +104,28 @@
         .orderBy("submittedAt", "desc")
         .limit(20)
         .get();
+      submittedAssignmentIds = new Set();
       wrap.innerHTML = "";
       if (snap.empty) {
         wrap.innerHTML = '<div class="empty">—</div>';
-        return;
+      } else {
+        snap.forEach(function (doc) {
+          const s = doc.data();
+          if (s.assignmentId) submittedAssignmentIds.add(s.assignmentId);
+          const row = document.createElement("div");
+          row.className = "submission-row";
+          const graded = typeof s.score === "number";
+          row.innerHTML =
+            "<div class='row-head'><strong>" + (s.assignmentTitle || "") + "</strong>" +
+            "<span class='badge " + (graded ? "green" : "pending") + "'>" +
+            (graded ? window.t("score") + ": " + s.score + "/10" : window.t("notGradedYet")) +
+            "</span></div>" +
+            "<div class='meta' style='color:#6b5f56;font-size:12px;margin-top:4px;'>" + window.PyClass.fmtDate(s.submittedAt) + "</div>" +
+            (s.feedback ? "<div style='margin-top:6px;font-size:13.5px;'><strong>" + window.t("feedback") + ":</strong> " + escapeHtml(s.feedback) + "</div>" : "");
+          wrap.appendChild(row);
+        });
       }
-      snap.forEach(function (doc) {
-        const s = doc.data();
-        const row = document.createElement("div");
-        row.className = "submission-row";
-        const graded = typeof s.score === "number";
-        row.innerHTML =
-          "<div class='row-head'><strong>" + (s.assignmentTitle || "") + "</strong>" +
-          "<span class='badge " + (graded ? "green" : "pending") + "'>" +
-          (graded ? window.t("score") + ": " + s.score + "/10" : window.t("notGradedYet")) +
-          "</span></div>" +
-          "<div class='meta' style='color:#6b5f56;font-size:12px;margin-top:4px;'>" + window.PyClass.fmtDate(s.submittedAt) + "</div>" +
-          (s.feedback ? "<div style='margin-top:6px;font-size:13.5px;'><strong>" + window.t("feedback") + ":</strong> " + escapeHtml(s.feedback) + "</div>" : "");
-        wrap.appendChild(row);
-      });
+      renderVisibleAssignments();
     } catch (e) {
       console.error(e);
       wrap.innerHTML = "";
