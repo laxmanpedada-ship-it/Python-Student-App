@@ -24,9 +24,7 @@ service cloud.firestore {
     // secret setup code — this is how the app knows who "the teacher" is.
     match /teachers/{uid} {
       allow read: if isSignedIn();
-      allow create: if isSignedIn()
-                    && request.auth.uid == uid
-                    && request.resource.data.setupCode == "venkateswara21";
+      allow create: if false;
       allow update, delete: if false;
     }
 
