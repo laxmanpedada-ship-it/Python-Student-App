@@ -182,7 +182,14 @@
       $("#pyStatus").style.display = "";
       $("#pyStatus").textContent = window.t("loadingPython");
     }
-    const result = await window.PyClass.runPython($("#code").value);
+    const result = await window.PyClass.runPython($("#code").value, function (status) {
+      $("#pyStatus").style.display = "";
+      if (status.indexOf("installing:") === 0) {
+        $("#pyStatus").textContent = "Adding the '" + status.slice(11) + "' library, please wait...";
+      } else {
+        $("#pyStatus").textContent = window.t("running");
+      }
+    });
     window.PyClass.__pyReady = true;
     $("#pyStatus").style.display = "none";
     out.textContent = result.output;
