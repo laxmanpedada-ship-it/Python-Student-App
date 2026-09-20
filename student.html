@@ -28,6 +28,9 @@
         <input id="nameInput" data-t-placeholder="yourName" autocomplete="off" />
         <label data-t="classCode">Class code (ask your teacher)</label>
         <input id="codeInput" data-t-placeholder="classCode" autocomplete="off" style="text-transform:uppercase;" />
+        <label data-t="yourPin">Secret PIN (at least 4 characters)</label>
+        <input id="pinInput" data-t-placeholder="yourPin" type="password" inputmode="numeric" autocomplete="off" />
+        <div class="meta" data-t="pinHelp" style="margin-top:4px;">Choose any PIN the first time. Use the same one every time you join, even on a different phone.</div>
         <div id="joinError" class="notice error" style="display:none;margin-top:10px;"></div>
         <button class="btn block" id="joinBtn" style="margin-top:14px;" data-t="join">Join</button>
       </div>
@@ -59,6 +62,11 @@
         <button class="btn secondary" id="submitBtn" style="display:none;" data-t="submit">Submit homework</button>
       </div>
       <div id="pyStatus" class="notice info" style="display:none;"></div>
+
+      <div id="hintsBox" style="display:none;margin-top:10px;">
+        <button class="btn secondary" id="hintBtn" data-t="showHint">Show a hint</button>
+        <div id="hintList" class="notice info" style="display:none;margin-top:8px;"></div>
+      </div>
 
       <h2 data-t="output">Output</h2>
       <div id="output" class="output">—</div>
