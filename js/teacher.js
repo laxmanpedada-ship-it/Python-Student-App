@@ -5,6 +5,7 @@
   let classes = [];
   let assignments = [];
   let currentAssignmentId = null;
+  let editingAssignmentId = null; // set while the create-homework form is editing an existing assignment instead of making a new one
 
   // Live-listener unsubscribe functions. Firestore streams changes to us
   // as they happen, so the dashboard updates itself the moment a student
@@ -162,7 +163,83 @@
         assignments = [];
         snap.forEach(function (doc) { assignments.push(Object.assign({ id: doc.id }, doc.data())); });
         renderAssignmentPicker();
+        renderHomeworkList();
       }, showDashError);
+  }
+
+  // Lists every homework this teacher has posted, each with Edit/Delete
+  // controls — this is the fix for "posted a homework with a typo and had
+  // no way to correct it besides posting a new one and ignoring the old."
+  function renderHomeworkList() {
+    const wrap = $("#homeworkList");
+    if (!wrap) return;
+    if (!assignments.length) {
+      wrap.innerHTML = '<div class="empty">' + window.t("noHomeworkYet") + '</div>';
+      return;
+    }
+    wrap.innerHTML = "";
+    assignments.forEach(function (a) {
+      const row = document.createElement("div");
+      row.className = "lesson-item";
+      const dueText = a.dueDate ? (window.t("due") + ": " + window.PyClass.fmtDueDate(a.dueDate)) : "";
+      row.innerHTML =
+        "<div style='flex:1;'><strong>" + escapeHtml(a.title_en) + "</strong>" +
+        "<div class='meta'>" + escapeHtml(a.classCode) + (dueText ? " · " + escapeHtml(dueText) : "") + "</div></div>" +
+        "<div style='display:flex;gap:6px;flex-wrap:wrap;'>" +
+        "<button type='button' class='btn secondary editHomeworkBtn' style='padding:6px 12px;font-size:13px;'>" + window.t("edit") + "</button>" +
+        "<button type='button' class='btn secondary deleteHomeworkBtn' style='padding:6px 12px;font-size:13px;'>" + window.t("delete") + "</button>" +
+        "</div>";
+      row.querySelector(".editHomeworkBtn").addEventListener("click", function () { startEditAssignment(a); });
+      row.querySelector(".deleteHomeworkBtn").addEventListener("click", function () { deleteAssignment(a); });
+      wrap.appendChild(row);
+    });
+  }
+
+  // Clears the create-homework form back to a blank "new homework" state,
+  // whether that's after a successful post, a successful save, or the
+  // teacher clicking Cancel out of an edit.
+  function resetAssignmentForm() {
+    editingAssignmentId = null;
+    $("#titleEn").value = ""; $("#titleTe").value = "";
+    $("#instrEn").value = ""; $("#instrTe").value = "";
+    $("#hintsEn").value = ""; $("#hintsTe").value = "";
+    $("#dueDate").value = "";
+    $("#starterCode").value = "";
+    $("#editingBanner").style.display = "none";
+    $("#postBtn").textContent = window.t("post");
+  }
+
+  // Loads an existing assignment's fields into the create-homework form so
+  // editing reuses the same UI instead of a separate edit screen. The form
+  // now targets an update (see postAssignment) until saved or cancelled.
+  function startEditAssignment(a) {
+    editingAssignmentId = a.id;
+    $("#assignClassSelect").value = a.classCode;
+    $("#titleEn").value = a.title_en || "";
+    $("#titleTe").value = a.title_te || "";
+    $("#instrEn").value = a.instructions_en || "";
+    $("#instrTe").value = a.instructions_te || "";
+    $("#hintsEn").value = (a.hints_en || []).join("\n");
+    $("#hintsTe").value = (a.hints_te || []).join("\n");
+    $("#dueDate").value = a.dueDate || "";
+    $("#starterCode").value = a.starterCode || "";
+    $("#editingBannerText").textContent = window.t("editingLabel") + " " + a.title_en;
+    $("#editingBanner").style.display = "flex";
+    $("#postBtn").textContent = window.t("saveChanges");
+    $("#editingBanner").scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  async function deleteAssignment(a) {
+    if (!window.confirm(window.t("confirmDeleteHomework"))) return;
+    try {
+      await db.collection("assignments").doc(a.id).delete();
+      // Submissions for a deleted assignment are left as-is — they're a
+      // graded record of the student's work, not something deleting the
+      // assignment should also erase.
+      if (editingAssignmentId === a.id) resetAssignmentForm();
+    } catch (e) {
+      showDashError(e);
+    }
   }
 
   // Turns a textarea's raw text into a clean array of hints, one per
@@ -255,23 +332,29 @@
       $("#assignError").style.display = "";
       return;
     }
+    const data = {
+      classCode: classCode,
+      title_en: title_en,
+      title_te: $("#titleTe").value.trim(),
+      instructions_en: $("#instrEn").value.trim(),
+      instructions_te: $("#instrTe").value.trim(),
+      hints_en: parseHints($("#hintsEn").value),
+      hints_te: parseHints($("#hintsTe").value),
+      dueDate: $("#dueDate").value || null, // "YYYY-MM-DD" from the date input, or null if left blank
+      starterCode: $("#starterCode").value
+    };
     try {
-      await db.collection("assignments").add({
-        teacherUid: uid,
-        classCode: classCode,
-        title_en: title_en,
-        title_te: $("#titleTe").value.trim(),
-        instructions_en: $("#instrEn").value.trim(),
-        instructions_te: $("#instrTe").value.trim(),
-        hints_en: parseHints($("#hintsEn").value),
-        hints_te: parseHints($("#hintsTe").value),
-        starterCode: $("#starterCode").value,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      $("#titleEn").value = ""; $("#titleTe").value = "";
-      $("#instrEn").value = ""; $("#instrTe").value = "";
-      $("#hintsEn").value = ""; $("#hintsTe").value = "";
-      $("#starterCode").value = "";
+      if (editingAssignmentId) {
+        // Editing: update in place, leaving teacherUid and createdAt
+        // untouched so ownership and its position in the list don't change.
+        await db.collection("assignments").doc(editingAssignmentId).update(data);
+      } else {
+        await db.collection("assignments").add(Object.assign({
+          teacherUid: uid,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, data));
+      }
+      resetAssignmentForm();
       // No manual reload needed — the live listener above picks this up.
     } catch (e) {
       $("#assignError").textContent = String(e.message || e);
@@ -401,6 +484,7 @@
     wireTranslateButton("#translateTitleBtn", function () { return translateField("#titleEn", "#titleTe", true); });
     wireTranslateButton("#translateInstrBtn", function () { return translateField("#instrEn", "#instrTe", true); });
     wireTranslateButton("#translateHintsBtn", function () { return translateHints(true); });
+    $("#cancelEditBtn").addEventListener("click", resetAssignmentForm);
     $("#postBtn").addEventListener("click", postAssignment);
     $("#assignmentPicker").addEventListener("change", function (e) {
       currentAssignmentId = e.target.value;
