@@ -2,7 +2,7 @@
 // weak signal. Pyodide (the Python engine) and Firebase load from their
 // CDNs and are cached the first time each is used, so a student only
 // downloads them once even on a slow mobile connection.
-const CACHE_NAME = "pyclass-shell-v3";
+const CACHE_NAME = "pyclass-shell-v4";
 const SHELL_FILES = [
   "./",
   "./index.html",
@@ -45,6 +45,12 @@ self.addEventListener("fetch", function (event) {
   const url = new URL(req.url);
   const isCdn = url.hostname.includes("jsdelivr.net") || url.hostname.includes("googleapis.com");
   const isShell = url.origin === self.location.origin;
+
+  // The Cache API can only store GET requests. Firebase Auth and Firestore
+  // send POST requests to googleapis.com (e.g. logging in, submitting
+  // homework), and those must NEVER be touched here — only read (GET)
+  // requests to CDN libraries or our own app files get cached.
+  if (req.method !== "GET") return;
 
   if (!isCdn && !isShell) return; // let everything else (Firestore/Auth calls) pass through untouched
 
