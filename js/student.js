@@ -165,9 +165,10 @@
     assignments.forEach(function (a) {
       const div = document.createElement("div");
       div.className = "lesson-item";
+      const dueText = a.dueDate ? (window.t("due") + ": " + window.PyClass.fmtDueDate(a.dueDate)) : "";
       div.innerHTML =
         "<div><strong>" + pick(a.title_en, a.title_te) + "</strong><div class='meta'>" +
-        window.fmtOrBlank(a.createdAt) + "</div></div><div>➜</div>";
+        window.fmtOrBlank(a.createdAt) + (dueText ? " · " + dueText : "") + "</div></div><div>➜</div>";
       div.addEventListener("click", function () {
         currentAssignment = a;
         $("#code").value = a.starterCode || "";
