@@ -156,6 +156,20 @@ window.PyClass = (function () {
     } catch (e) { return ""; }
   }
 
+  // Formats a plain "YYYY-MM-DD" due-date string (from a <input type="date">)
+  // as a readable local date, e.g. "10/25/2026". Deliberately NOT reusing
+  // fmtDate here: new Date("2026-10-25") parses as UTC midnight, and
+  // converting that to a negative-offset timezone (like US Eastern) rolls
+  // it back to the previous evening — a due date would silently show the
+  // wrong day. Appending a local time-of-day avoids that.
+  function fmtDueDate(dateStr) {
+    if (!dateStr) return "";
+    try {
+      const d = new Date(dateStr + "T00:00:00");
+      return d.toLocaleDateString();
+    } catch (e) { return dateStr; }
+  }
+
   return {
     initFirebase: initFirebase,
     loadPyodideOnce: loadPyodideOnce,
@@ -164,6 +178,7 @@ window.PyClass = (function () {
     registerServiceWorker: registerServiceWorker,
     qs: qs,
     qsa: qsa,
-    fmtDate: fmtDate
+    fmtDate: fmtDate,
+    fmtDueDate: fmtDueDate
   };
 })();
