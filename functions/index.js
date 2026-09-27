@@ -40,8 +40,8 @@ const logger = require("firebase-functions/logger");
 // ------------------------------------------------------------
 // EDIT THESE TWO to match the private repo you created in step 1 above.
 // ------------------------------------------------------------
-const GITHUB_OWNER = "PASTE_YOUR_GITHUB_USERNAME_HERE";
-const GITHUB_REPO = "pyclass-submissions";
+const GITHUB_OWNER = "laxmanpedada-ship-it";
+const GITHUB_REPO = "Pyclass-Submissions";
 const GITHUB_BRANCH = "main";
 
 const GITHUB_TOKEN = defineSecret("GITHUB_TOKEN");
