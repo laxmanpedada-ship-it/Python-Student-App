@@ -87,7 +87,12 @@ window.STRINGS = {
     welcomeBack: "Welcome back",
     changeLanguage: "తెలుగు",
     home: "Home",
-    switchStudent: "Not you? Switch student"
+    switchStudent: "Not you? Switch student",
+    changeNoteLabelFirst: "What did you build? (one sentence)",
+    changeNoteLabelAgain: "What did you change? (one sentence)",
+    changeNotePlaceholder: "e.g. Fixed the loop so it stops at 10",
+    changeNoteTooShort: "Write a little more about what you did (at least 10 characters).",
+    submittedTag: "Submitted"
   },
   te: {
     appName: "శ్రీకాకుళం పైథాన్ తరగతి",
@@ -175,7 +180,12 @@ window.STRINGS = {
     welcomeBack: "తిరిగి స్వాగతం",
     changeLanguage: "English",
     home: "హోమ్",
-    switchStudent: "మీరు కాదా? విద్యార్థిని మార్చండి"
+    switchStudent: "మీరు కాదా? విద్యార్థిని మార్చండి",
+    changeNoteLabelFirst: "మీరు ఏమి తయారు చేశారు? (ఒక వాక్యం)",
+    changeNoteLabelAgain: "మీరు ఏమి మార్చారు? (ఒక వాక్యం)",
+    changeNotePlaceholder: "ఉదా. 10 వద్ద ఆగేలా లూప్‌ను సరిచేశాను",
+    changeNoteTooShort: "మీరు చేసింది గురించి కొంచెం ఎక్కువ రాయండి (కనీసం 10 అక్షరాలు).",
+    submittedTag: "సమర్పించారు"
   }
 };
 
