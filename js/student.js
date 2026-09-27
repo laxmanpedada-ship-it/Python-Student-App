@@ -29,6 +29,7 @@
   let currentAssignment = null; // {id, ...} or null when just practicing a lesson
   let lastAssignments = []; // most recent fetch from the server, unfiltered
   let submittedAssignmentIds = new Set(); // assignment ids this student already turned in
+  let lastSubmissionByAssignment = {}; // assignmentId -> that student's most recent submission's code, so reopening a submitted assignment continues from what they last turned in, not a blank starter
 
   // Live-listener unsubscribe functions, so homework and grades appear the
   // moment the teacher posts or grades them — no refresh or re-login needed.
@@ -118,7 +119,7 @@
     studentName = null; classCode = null; currentAssignment = null;
     myStudentKey = undefined;
     hintsShown = 0;
-    lastAssignments = []; submittedAssignmentIds = new Set();
+    lastAssignments = []; submittedAssignmentIds = new Set(); lastSubmissionByAssignment = {};
     $("#nameInput").value = "";
     $("#codeInput").value = "";
     $("#pinInput").value = "";
@@ -147,6 +148,7 @@
         $("#editingLabel").textContent = pick(l.title_en, l.title_te);
         $("#editingLabel").className = "badge";
         $("#submitBtn").style.display = "none";
+        $("#changeNoteWrap").style.display = "none";
         hintsShown = 0;
         renderHints();
       });
@@ -163,18 +165,30 @@
     }
     $("#noAssignments").style.display = "none";
     assignments.forEach(function (a) {
+      const isResubmit = submittedAssignmentIds.has(a.id);
       const div = document.createElement("div");
       div.className = "lesson-item";
       const dueText = a.dueDate ? (window.t("due") + ": " + window.PyClass.fmtDueDate(a.dueDate)) : "";
+      const submittedTag = isResubmit ? " <span class='badge green' style='font-size:11px;'>" + window.t("submittedTag") + "</span>" : "";
       div.innerHTML =
-        "<div><strong>" + pick(a.title_en, a.title_te) + "</strong><div class='meta'>" +
+        "<div><strong>" + pick(a.title_en, a.title_te) + submittedTag + "</strong><div class='meta'>" +
         window.fmtOrBlank(a.createdAt) + (dueText ? " · " + dueText : "") + "</div></div><div>➜</div>";
       div.addEventListener("click", function () {
         currentAssignment = a;
-        $("#code").value = a.starterCode || "";
+        // Reopening an already-submitted assignment continues from that
+        // last submission's code, not a blank starter — so a resubmit is
+        // an actual edit, the same way a real commit history works.
+        const priorCode = lastSubmissionByAssignment[a.id];
+        $("#code").value = isResubmit && priorCode != null ? priorCode : (a.starterCode || "");
         $("#editingLabel").textContent = "📝 " + pick(a.title_en, a.title_te);
         $("#editingLabel").className = "badge green";
         $("#submitBtn").style.display = "";
+        $("#changeNoteWrap").style.display = "";
+        $("#changeNote").value = "";
+        // Resubmitting (this assignment already has a submission from this
+        // student) gets a different prompt than a first attempt — see
+        // submittedAssignmentIds, kept up to date by loadMySubmissions().
+        $("#changeNoteLabel").textContent = window.t(isResubmit ? "changeNoteLabelAgain" : "changeNoteLabelFirst");
         const instr = pick(a.instructions_en, a.instructions_te);
         if (instr) {
           $("#pyStatus").style.display = "";
@@ -192,12 +206,12 @@
     return window.PyClass.fmtDate(ts);
   };
 
-  // Shows only homework this student hasn't turned in yet.
+  // Shows every posted assignment, submitted or not — a submitted one
+  // stays clickable so a student can reopen and resubmit it (see the
+  // "Submitted" tag added in renderAssignments and the isResubmit branch
+  // in its click handler above).
   function renderVisibleAssignments() {
-    const visible = lastAssignments.filter(function (a) {
-      return !submittedAssignmentIds.has(a.id);
-    });
-    renderAssignments(visible);
+    renderAssignments(lastAssignments);
   }
 
   function loadAssignments() {
@@ -221,13 +235,22 @@
       .limit(20)
       .onSnapshot(function (snap) {
         submittedAssignmentIds = new Set();
+        lastSubmissionByAssignment = {};
         wrap.innerHTML = "";
         if (snap.empty) {
           wrap.innerHTML = '<div class="empty">—</div>';
         } else {
           snap.forEach(function (doc) {
             const s = doc.data();
-            if (s.assignmentId) submittedAssignmentIds.add(s.assignmentId);
+            if (s.assignmentId) {
+              submittedAssignmentIds.add(s.assignmentId);
+              // Query is ordered submittedAt desc, so the first submission
+              // seen per assignment here is that assignment's most recent
+              // one — exactly the code a resubmit should continue from.
+              if (!(s.assignmentId in lastSubmissionByAssignment)) {
+                lastSubmissionByAssignment[s.assignmentId] = s.code || "";
+              }
+            }
             const row = document.createElement("div");
             row.className = "submission-row";
             const graded = typeof s.score === "number";
@@ -372,6 +395,18 @@
 
   async function submitHomework() {
     if (!currentAssignment) return;
+    // Every submission needs a one-sentence note on what the student did —
+    // this becomes the actual commit message when the code is mirrored to
+    // GitHub (see the "commitToGitHub" Cloud Function), so a real sentence
+    // here is what turns that history into something worth reading later.
+    const changeNote = $("#changeNote").value.trim();
+    if (changeNote.length < 10) {
+      $("#submitMsg").className = "notice error";
+      $("#submitMsg").textContent = window.t("changeNoteTooShort");
+      $("#submitMsg").style.display = "";
+      $("#changeNote").focus();
+      return;
+    }
     const btn = $("#submitBtn");
     btn.disabled = true;
     const result = await runCode();
@@ -384,6 +419,7 @@
         studentUid: uid, // the device's anonymous session id, kept for troubleshooting only
         studentName: studentName,
         code: $("#code").value,
+        changeNote: changeNote,
         output: result.output,
         ok: result.ok,
         score: null,
@@ -393,6 +429,7 @@
       $("#submitMsg").className = "notice";
       $("#submitMsg").textContent = window.t("submitted");
       $("#submitMsg").style.display = "";
+      $("#changeNote").value = "";
       loadMySubmissions();
     } catch (e) {
       console.error(e);
