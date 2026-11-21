@@ -95,7 +95,7 @@ window.STRINGS = {
     submittedTag: "Submitted",
     // --- offline mode ---
     pythonUnavailable: "Python isn't saved on this device yet, so your code couldn't run. Connect to the internet once and press \"Get ready for offline\".",
-    libNeedsInternet: "That library isn't saved on this device yet. Connect to the internet and press \"Get ready for offline\".",
+    libNeedsInternet: "That library isn't saved on this device, and it couldn't be downloaded right now. Connect to the internet and press Run again; it will download by itself. (\"Get ready for offline\" saves only numpy and matplotlib.)",
     offlineGetReady: "Get ready for offline",
     offlineAllReady: "Ready for offline: Python and libraries are saved on this device.",
     offlineEngineOnly: "Python is saved for offline use. Libraries (numpy, matplotlib) are not saved yet.",
@@ -206,7 +206,7 @@ window.STRINGS = {
     submittedTag: "సమర్పించారు",
     // --- offline mode (Telugu: please have a Telugu speaker proofread) ---
     pythonUnavailable: "పైథాన్ ఈ పరికరంలో ఇంకా సేవ్ కాలేదు, కాబట్టి మీ కోడ్ నడవలేదు. ఒక్కసారి ఇంటర్నెట్‌కు కనెక్ట్ అయి \"ఆఫ్‌లైన్ కోసం సిద్ధం చేయండి\" నొక్కండి.",
-    libNeedsInternet: "ఆ లైబ్రరీ ఈ పరికరంలో ఇంకా సేవ్ కాలేదు. ఇంటర్నెట్‌కు కనెక్ట్ అయి \"ఆఫ్‌లైన్ కోసం సిద్ధం చేయండి\" నొక్కండి.",
+    libNeedsInternet: "ఆ లైబ్రరీ ఈ పరికరంలో సేవ్ కాలేదు, ఇప్పుడు డౌన్‌లోడ్ కూడా కాలేదు. ఇంటర్నెట్‌కు కనెక్ట్ అయి మళ్లీ Run నొక్కండి; అది ఆటోమేటిక్‌గా డౌన్‌లోడ్ అవుతుంది.",
     offlineGetReady: "ఆఫ్‌లైన్ కోసం సిద్ధం చేయండి",
     offlineAllReady: "ఆఫ్‌లైన్‌కు సిద్ధం: పైథాన్ మరియు లైబ్రరీలు ఈ పరికరంలో సేవ్ అయ్యాయి.",
     offlineEngineOnly: "పైథాన్ ఆఫ్‌లైన్ కోసం సేవ్ అయింది. లైబ్రరీలు (numpy, matplotlib) ఇంకా సేవ్ కాలేదు.",
