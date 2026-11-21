@@ -18,7 +18,7 @@
 //
 // IMPORTANT: js/common.js reads LIB_CACHE by name to show the "ready for
 // offline" status. If you rename it here, rename it there too.
-const SHELL_CACHE = "pyclass-shell-v11";
+const SHELL_CACHE = "pyclass-shell-v12";
 const LIB_CACHE = "pyclass-libs-v1";
 const CDN_HOST = "cdn.jsdelivr.net";
 
