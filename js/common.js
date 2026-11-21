@@ -157,18 +157,24 @@ window.PyClass = (function () {
         if (onStatus) onStatus("retrying");
         const retry = await attempt();
         if (retry.ok) return retry;
-        return { ok: false, output: retry.output + "\n" + retry.errorText };
+        // Pyodide's loadPackage does NOT always throw when a download fails
+        // (e.g. no signal): it can return quietly, leaving the library
+        // missing. So "no error" doesn't prove it installed. If the same
+        // "No module named" error comes straight back, treat the library
+        // as not installed and fall through to the explanations below.
+        const sameError = /ModuleNotFoundError: No module named '/.test(retry.errorText || "");
+        if (!sameError) return { ok: false, output: retry.output + "\n" + retry.errorText };
+        installed = false;
       }
       // The real reason matters: "no signal" and "this library doesn't exist
       // for browsers" need different advice, and blaming the library when
       // the problem is the connection would send students down a dead end.
-      if (!navigator.onLine) {
-        return { ok: false, output: result.output + "\n" + result.errorText + "\n\n" + window.t("libNeedsInternet") };
-      }
+      // We can't tell "no signal" from "library doesn't exist for browsers"
+      // reliably (navigator.onLine is wrong on wifi with no internet), so
+      // the message covers both honestly.
       return {
         ok: false,
-        output: result.output + "\n" + result.errorText +
-          "\n\n(Tried to automatically add the '" + moduleName + "' library but it isn't available for Python running in a browser. Try a different library, or ask your teacher.)"
+        output: result.output + "\n" + result.errorText + "\n\n" + window.t("libNeedsInternet")
       };
     }
 
