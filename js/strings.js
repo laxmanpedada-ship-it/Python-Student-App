@@ -92,7 +92,25 @@ window.STRINGS = {
     changeNoteLabelAgain: "What did you change? (one sentence)",
     changeNotePlaceholder: "e.g. Fixed the loop so it stops at 10",
     changeNoteTooShort: "Write a little more about what you did (at least 10 characters).",
-    submittedTag: "Submitted"
+    submittedTag: "Submitted",
+    // --- offline mode ---
+    pythonUnavailable: "Python isn't saved on this device yet, so your code couldn't run. Connect to the internet once and press \"Get ready for offline\".",
+    libNeedsInternet: "That library isn't saved on this device yet. Connect to the internet and press \"Get ready for offline\".",
+    offlineGetReady: "Get ready for offline",
+    offlineAllReady: "Ready for offline: Python and libraries are saved on this device.",
+    offlineEngineOnly: "Python is saved for offline use. Libraries (numpy, matplotlib) are not saved yet.",
+    offlineNotReady: "Not ready for offline yet. Press the button while you have internet.",
+    offlineSavingEngine: "Saving Python on this device...",
+    offlineSavingLib: "Saving library: ",
+    offlineDone: "All saved! You can now use Python without internet.",
+    offlineFailed: "Couldn't finish. Check your internet and try again.",
+    bannerOffline: "You're offline. You can still write and run code. Anything you submit is saved here and sent when you're back online.",
+    submittedOffline: "Saved on this device! It will be sent to your teacher automatically when you're back online.",
+    submittedOfflineKeepOpen: "Saved, but this browser can't keep it after you close the page. Please keep this page open until you're back online.",
+    submitFailedLater: "Your homework could not be sent: ",
+    pendingTag: "Waiting to send",
+    noHomeworkOffline: "Can't reach the server, and no homework is saved on this device yet. Connect to the internet to check for homework.",
+    joinNeedsInternet: "You need internet the first time you join. Connect once, then you can use the app without internet."
   },
   te: {
     appName: "శ్రీకాకుళం పైథాన్ తరగతి",
@@ -185,7 +203,25 @@ window.STRINGS = {
     changeNoteLabelAgain: "మీరు ఏమి మార్చారు? (ఒక వాక్యం)",
     changeNotePlaceholder: "ఉదా. 10 వద్ద ఆగేలా లూప్‌ను సరిచేశాను",
     changeNoteTooShort: "మీరు చేసింది గురించి కొంచెం ఎక్కువ రాయండి (కనీసం 10 అక్షరాలు).",
-    submittedTag: "సమర్పించారు"
+    submittedTag: "సమర్పించారు",
+    // --- offline mode (Telugu: please have a Telugu speaker proofread) ---
+    pythonUnavailable: "పైథాన్ ఈ పరికరంలో ఇంకా సేవ్ కాలేదు, కాబట్టి మీ కోడ్ నడవలేదు. ఒక్కసారి ఇంటర్నెట్‌కు కనెక్ట్ అయి \"ఆఫ్‌లైన్ కోసం సిద్ధం చేయండి\" నొక్కండి.",
+    libNeedsInternet: "ఆ లైబ్రరీ ఈ పరికరంలో ఇంకా సేవ్ కాలేదు. ఇంటర్నెట్‌కు కనెక్ట్ అయి \"ఆఫ్‌లైన్ కోసం సిద్ధం చేయండి\" నొక్కండి.",
+    offlineGetReady: "ఆఫ్‌లైన్ కోసం సిద్ధం చేయండి",
+    offlineAllReady: "ఆఫ్‌లైన్‌కు సిద్ధం: పైథాన్ మరియు లైబ్రరీలు ఈ పరికరంలో సేవ్ అయ్యాయి.",
+    offlineEngineOnly: "పైథాన్ ఆఫ్‌లైన్ కోసం సేవ్ అయింది. లైబ్రరీలు (numpy, matplotlib) ఇంకా సేవ్ కాలేదు.",
+    offlineNotReady: "ఇంకా ఆఫ్‌లైన్‌కు సిద్ధంగా లేదు. ఇంటర్నెట్ ఉన్నప్పుడు బటన్ నొక్కండి.",
+    offlineSavingEngine: "పైథాన్‌ను ఈ పరికరంలో సేవ్ చేస్తోంది...",
+    offlineSavingLib: "లైబ్రరీ సేవ్ చేస్తోంది: ",
+    offlineDone: "అన్నీ సేవ్ అయ్యాయి! ఇప్పుడు ఇంటర్నెట్ లేకుండా పైథాన్ వాడవచ్చు.",
+    offlineFailed: "పూర్తి కాలేదు. ఇంటర్నెట్ చూసి మళ్లీ ప్రయత్నించండి.",
+    bannerOffline: "మీరు ఆఫ్‌లైన్‌లో ఉన్నారు. కోడ్ రాయవచ్చు, రన్ చేయవచ్చు. మీరు సమర్పించినవి ఇక్కడ సేవ్ అయి, ఇంటర్నెట్ వచ్చాక పంపబడతాయి.",
+    submittedOffline: "ఈ పరికరంలో సేవ్ అయింది! ఇంటర్నెట్ రాగానే మీ ఉపాధ్యాయుడికి దానంతట అదే పంపబడుతుంది.",
+    submittedOfflineKeepOpen: "సేవ్ అయింది, కానీ పేజీ మూసేస్తే ఈ బ్రౌజర్ దాన్ని ఉంచుకోలేదు. ఇంటర్నెట్ వచ్చే వరకు ఈ పేజీని తెరిచే ఉంచండి.",
+    submitFailedLater: "మీ హోంవర్క్ పంపబడలేదు: ",
+    pendingTag: "పంపడానికి వేచి ఉంది",
+    noHomeworkOffline: "సర్వర్‌ను చేరుకోలేకపోతున్నాం, ఈ పరికరంలో హోంవర్క్ ఏదీ సేవ్ కాలేదు. హోంవర్క్ చూడటానికి ఇంటర్నెట్‌కు కనెక్ట్ అవ్వండి.",
+    joinNeedsInternet: "మొదటిసారి చేరడానికి ఇంటర్నెట్ కావాలి. ఒక్కసారి కనెక్ట్ అయితే, ఆ తర్వాత ఇంటర్నెట్ లేకుండా యాప్ వాడవచ్చు."
   }
 };
 
